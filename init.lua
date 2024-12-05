@@ -30,16 +30,112 @@ require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
 
   -- Git related plugins
-  'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
 
   -- Show mark information
   'kshenoy/vim-signature',
 
+  'echasnovski/mini.ai',
+
+  {
+    dir = "/Users/andrewmorrison/Desktop/workspace/neovim/line_notes.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    config = function()
+      require("line_notes").setup({
+        add_mark_key = "<leader>am",
+        list_marks_key = "<leader>lm",
+        delete_mark_key = "<leader>dm",
+
+      })
+    end,
+    -- 'asmorris/line_notes.nvim',
+
+  },
+
+  -- Catppuccin theme
+  { "catppuccin/nvim",         name = "catppuccin", priority = 1000 },
+
   'tpope/vim-endwise',
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
+
+  -- Devcontainer
+  {
+    'https://codeberg.org/esensar/nvim-dev-container',
+    dependencies = 'nvim-treesitter/nvim-treesitter'
+  },
+
+  -- Avante for LLM coding goodness
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    lazy = false,
+    version = false, -- set this if you want to always pull the latest change
+    opts = {
+      -- add any opts here
+      provider = "openai",
+      openai = {
+        model = "gpt-4o-mini",
+      },
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = "make",
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      --- The below dependencies are optional,
+      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+      "zbirenbaum/copilot.lua",      -- for providers='copilot'
+      {
+        -- support for image pasting
+        "HakonHarnes/img-clip.nvim",
+        event = "VeryLazy",
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
+            },
+            -- required for Windows users
+            use_absolute_path = true,
+          },
+        },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { "markdown", "Avante" },
+        },
+        ft = { "markdown", "Avante" },
+      },
+    },
+  },
+
+  -- Testing
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "olimorris/neotest-rspec",
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-rspec")
+        },
+      })
+    end
+  },
 
   -- Tpope is the man
   'tpope/vim-surround',
@@ -47,8 +143,7 @@ require('lazy').setup({
 
   'mbbill/undotree',
 
-  -- Leap for moving more efficiently
-  'ggandor/leap.nvim',
+  -- 'ggandor/leap.nvim',
 
   -- Codeium AI code
   -- {
@@ -63,21 +158,29 @@ require('lazy').setup({
   -- },
 
   -- Think this is messing up macros and some things
-  -- {
-  --   "folke/noice.nvim",
-  --   event = "VeryLazy",
-  --   opts = {
-  --     -- add any options here
-  --   },
-  --   dependencies = {
-  --     -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
-  --     "MunifTanjim/nui.nvim",
-  --     -- OPTIONAL:
-  --     --   `nvim-notify` is only needed, if you want to use the notification view.
-  --     --   If not available, we use `mini` as the fallback
-  --     "rcarriga/nvim-notify",
-  --   }
-  -- },
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      "MunifTanjim/nui.nvim",
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      "rcarriga/nvim-notify",
+    }
+  },
+
+  -- Markdown
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    opts = {},
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+  },
 
   -- Auto pairs
   'jiangmiao/auto-pairs',
@@ -89,7 +192,7 @@ require('lazy').setup({
   'junegunn/vim-easy-align',
 
   -- bufferline to see my files
-  { 'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons' },
+  { 'akinsho/bufferline.nvim', version = "*",       dependencies = 'nvim-tree/nvim-web-devicons' },
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -126,24 +229,32 @@ require('lazy').setup({
     },
   },
 
-  -- Did not use at all
-  -- {
-  -- "jackMort/ChatGPT.nvim",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     require("chatgpt").setup({
-  --       api_key_cmd = "op read op://Private/Neovim/password --no-newline"
-  --   })
-  --   end,
-  --   dependencies = {
-  --     "MunifTanjim/nui.nvim",
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-telescope/telescope.nvim"
-  --   }
-  -- },
+  -- For better register working
+  {
+    'AckslD/nvim-neoclip.lua',
+    dependencies = {
+      -- You'll need at least one of these
+      'nvim-telescope/telescope.nvim',
+      -- 'ibhagwan/fzf-lua',
+    },
+  },
+
+  -- Use neogit for smol git actions
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",  -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+
+      -- Only one of these is needed, not both.
+      "nvim-telescope/telescope.nvim", -- optional
+      -- "ibhagwan/fzf-lua",            -- optional
+    },
+    config = true
+  },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',    opts = {} },
+  { 'folke/which-key.nvim',  opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -159,9 +270,15 @@ require('lazy').setup({
       on_attach = function(bufnr)
         vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
 
+        local function map(mode, l, r, opts)
+          opts = opts or {}
+          opts.buffer = bufnr
+          vim.keymap.set(mode, l, r, opts)
+        end
+
         -- don't override the built-in and fugitive keymaps
         local gs = package.loaded.gitsigns
-        vim.keymap.set({ 'n', 'v' }, ']c', function()
+        map({ 'n', 'v' }, ']c', function()
           if vim.wo.diff then
             return ']c'
           end
@@ -170,7 +287,7 @@ require('lazy').setup({
           end)
           return '<Ignore>'
         end, { expr = true, buffer = bufnr, desc = 'Jump to next hunk' })
-        vim.keymap.set({ 'n', 'v' }, '[c', function()
+        map({ 'n', 'v' }, '[c', function()
           if vim.wo.diff then
             return '[c'
           end
@@ -179,17 +296,19 @@ require('lazy').setup({
           end)
           return '<Ignore>'
         end, { expr = true, buffer = bufnr, desc = 'Jump to previous hunk' })
-      end,
-    },
-  },
 
-  {
-    -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
-    priority = 1000,
-    config = function()
-      vim.cmd.colorscheme 'onedark'
-    end,
+        map({ 'n', 'v' }, '<leader>hs', ':Gitsigns stage_hunk<CR>', { desc = '[H]unk [S]tage' })
+        map({ 'n', 'v' }, '<leader>hr', ':Gitsigns reset_hunk<CR>', { desc = '[H]unk [R]eset' })
+        map('n', '<leader>hS', gs.stage_buffer, { desc = 'Buffer [S]tage' })
+        map('n', '<leader>ha', gs.stage_hunk, { desc = '[H]unk St[a]ge' })
+        map('n', '<leader>hu', gs.undo_stage_hunk, { desc = '[H]unk [u]ndo stage' })
+        map('n', '<leader>hR', gs.reset_buffer, { desc = '[H]unk buffer reset' })
+        map('n', '<leader>hb', function() gs.blame_line { full = true } end, { desc = '[H]unk [b]lame' })
+        map('n', '<leader>bB', gs.toggle_current_line_blame, { desc = '[T]oggle [B]lame' })
+        map('n', '<leader>hd', gs.diffthis, { desc = '[H]unk [d]iff' })
+        map('n', '<leader>hD', function() gs.diffthis('~') end, { desc = '[H]unk [D]iff head' })
+      end
+    },
   },
 
   {
@@ -236,7 +355,17 @@ require('lazy').setup({
           return vim.fn.executable 'make' == 1
         end,
       },
+      {
+        "nvim-telescope/telescope-live-grep-args.nvim",
+        -- This will not install any breaking changes.
+        --         -- For major updates, this must be adjusted manually.
+        version = "^1.0.0",
+      },
     },
+    config = function()
+      local telescope = require('telescope')
+      telescope.load_extension('live_grep_args')
+    end
   },
 
   {
@@ -256,37 +385,23 @@ require('lazy').setup({
   },
 
   {
-    "epwalsh/obsidian.nvim",
-    lazy = true,
-    event = {
-      -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-      -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/**.md"
-      "BufReadPre obsidian/**.md",
-      "BufNewFile obsidian/**.md",
+    "christoomey/vim-tmux-navigator",
+    cmd = {
+      "TmuxNavigateLeft",
+      "TmuxNavigateDown",
+      "TmuxNavigateUp",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
     },
-    dependencies = {
-      -- Required.
-      "nvim-lua/plenary.nvim",
-      'hrsh7th/cmp-nvim-lsp',
-      'nvim-telescope/telescope.nvim',
+    keys = {
+      { "<c-h>",  "<cmd><C-U>TmuxNavigateLeft<cr>" },
+      { "<c-j>",  "<cmd><C-U>TmuxNavigateDown<cr>" },
+      { "<c-k>",  "<cmd><C-U>TmuxNavigateUp<cr>" },
+      { "<c-l>",  "<cmd><C-U>TmuxNavigateRight<cr>" },
+      { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+    },
+  },
 
-      -- see below for full list of optional dependencies 👇
-    },
-    opts = {
-      workspaces = {
-        {
-          name = "Second Brain",
-          path = "~/Desktop/workspace/obsidian/Second Brain"
-        },
-        {
-          name = "Pilot",
-          path = "~/Desktop/workspace/obsidian/Pilot"
-        },
-      },
-
-      -- see below for full list of options 👇
-    },
-  }
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -301,13 +416,43 @@ require('lazy').setup({
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   -- { import = 'custom.plugins' },
 }, {})
-require("oil").setup({
-  keymaps = {
-    ["g."] = "actions.toggle_hidden",
+
+require('neoclip').setup()
+require('line_notes').setup()
+
+require("lualine").setup({
+  sections = {
+    lualine_x = {
+      {
+        require("noice").api.statusline.mode.get,
+        cond = require("noice").api.statusline.mode.has,
+        color = { fg = "#ff9e64" },
+      }
+    },
   },
 })
 
-require('leap').create_default_mappings()
+require("noice").setup({
+  lsp = {
+    -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+    override = {
+      ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+      ["vim.lsp.util.stylize_markdown"] = true,
+      ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+    },
+  },
+  -- you can enable a preset for easier configuration
+  presets = {
+    bottom_search = true,         -- use a classic bottom cmdline for search
+    command_palette = true,       -- position the cmdline and popupmenu together
+    long_message_to_split = true, -- long messages will be sent to a split
+    inc_rename = false,           -- enables an input dialog for inc-rename.nvim
+    lsp_doc_border = false,       -- add a border to hover docs and signature help
+  },
+})
+
+require("devcontainer").setup {}
+-- require('leap').create_default_mappings()
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -347,6 +492,8 @@ vim.wo.signcolumn = 'yes'
 -- Decrease update time
 vim.o.updatetime = 250
 vim.o.timeoutlen = 300
+vim.cmd.colorscheme "catppuccin-frappe"
+
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
@@ -364,8 +511,14 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
+
 -- oil setup
 vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+
+-- macros stuff
+vim.keymap.set("n", "Q", "@qj", { desc = "Rerun macro on new line" })
+vim.keymap.set("x", "Q", ":norm @q<CR>", { desc = "rerun in visual mode" })
+
 
 -- noice
 -- vim.keymap.set("n", "<leader>nd", "<cmd>NoiceDismiss<CR>", { desc = "Dismiss noice notifications" })
@@ -377,11 +530,11 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open float
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 local opts = { noremap = true, silent = true }
 
-vim.keymap.set("n", "<C-h>", "<C-w>h", opts)
-vim.keymap.set("n", "<C-j>", "<C-w>j", opts)
-vim.keymap.set("n", "<C-k>", "<C-w>k", opts)
-vim.keymap.set("n", "<C-l>", "<C-w>l", opts)
 vim.keymap.set("n", "<leader>x", ":bd<CR>", opts)
+
+-- Copy current buffer file path to clipboard
+vim.keymap.set('n', '<leader>cf', ':let @+ = expand("%:p")<CR>:echo "Copied: " . expand("%:p")<CR>',
+  { noremap = true, silent = true })
 
 -- Resize with arrows
 vim.keymap.set("n", "<C-Up>", ":resize -2<CR>", opts)
@@ -406,10 +559,6 @@ vim.keymap.set("n", "<leader>u", ":UndotreeToggle<CR>", opts)
 -- Press jk fast to exit insert mode
 vim.keymap.set("i", "jk", "<ESC>", opts)
 vim.keymap.set("v", "jk", "<ESC>", opts)
-
---Save quickly
-vim.keymap.set("i", "<C-s>", "<ESC><cmd>lua vim.lsp.buf.formatting_sync()<CR> | <cmd>w<CR>", opts)
-vim.keymap.set("n", "<C-s>", "<ESC><cmd>lua vim.lsp.buf.formatting_sync()<CR> | <cmd>w<CR>", opts)
 
 -- Navigate 5x
 vim.keymap.set("n", "<M-j>", "5j", opts)
@@ -451,6 +600,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
+local lga_actions = require("telescope-live-grep-args.actions")
+
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
@@ -462,164 +613,27 @@ require('telescope').setup {
       },
     },
   },
+
+  extensions = {
+    live_grep_args = {
+      auto_quoting = true, -- enable/disable auto-quoting
+
+      mappings = {
+        i = {
+          ["<C-k>"] = lga_actions.quote_prompt(),
+          ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
+          -- freeze the current list and start a fuzzy search in the frozen list
+          ["<C-space>"] = lga_actions.to_fuzzy_refine,
+        },
+      },
+
+    }
+  }
 }
-require("obsidian").setup({
-  workspaces = {
-    {
-      name = "Second Brain",
-      path = "~/Desktop/workspace/obsidian/Second Brain",
-    },
-    {
-      name = "Pilot",
-      path = "~/Desktop/workspace/obsidian/Pilot",
-    },
-  },
-  -- Optional, set to true to use the current directory as a vault; otherwise,
-  -- the first workspace is opened by default
-  detect_cwd = false,
-
-  -- Optional, if you keep notes in a specific subdirectory of your vault.
-  notes_subdir = "notes",
-
-  -- Optional, set the log level for obsidian.nvim. This is an integer corresponding to one of the log
-  -- levels defined by "vim.log.levels.*" or nil, which is equivalent to DEBUG (1).
-  log_level = vim.log.levels.DEBUG,
-
-  daily_notes = {
-    -- Optional, if you keep daily notes in a separate directory.
-    folder = "notes/dailies",
-    -- Optional, if you want to change the date format for the ID of daily notes.
-    date_format = "%Y-%m-%d",
-    -- Optional, if you want to change the date format of the default alias of daily notes.
-    alias_format = "%B %-d, %Y",
-    -- Optional, if you want to automatically insert a template from your template directory like 'daily.md'
-    template = nil
-  },
-
-  -- Optional, completion.
-  completion = {
-    -- If using nvim-cmp, otherwise set to false
-    nvim_cmp = true,
-    -- Trigger completion at 2 chars
-    min_chars = 2,
-    -- Where to put new notes created from completion. Valid options are
-    --  * "current_dir" - put new notes in same directory as the current buffer.
-    --  * "notes_subdir" - put new notes in the default notes subdirectory.
-    new_notes_location = "notes_subdir",
-
-    -- Whether to add the output of the node_id_func to new notes in autocompletion.
-    -- E.g. "[[Foo" completes to "[[foo|Foo]]" assuming "foo" is the ID of the note.
-    prepend_note_id = true
-  },
-
-  -- Optional, key mappings.
-  mappings = {
-    -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
-    ["gf"] = {
-      action = function()
-        return require("obsidian").util.gf_passthrough()
-      end,
-      opts = { noremap = false, expr = true, buffer = true },
-    },
-  },
-
-  -- Optional, customize how names/IDs for new notes are created.
-  note_id_func = function(title)
-    -- Create note IDs in a Zettelkasten format with a timestamp and a suffix.
-    -- In this case a note with the title 'My new note' will given an ID that looks
-    -- like '1657296016-my-new-note', and therefore the file name '1657296016-my-new-note.md'
-    local suffix = ""
-    if title ~= nil then
-      -- If title is given, transform it into valid file name.
-      suffix = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
-    else
-      -- If title is nil, just add 4 random uppercase letters to the suffix.
-      for _ = 1, 4 do
-        suffix = suffix .. string.char(math.random(65, 90))
-      end
-    end
-    return tostring(os.time()) .. "-" .. suffix
-  end,
-
-  -- Optional, set to true if you don't want obsidian.nvim to manage frontmatter.
-  disable_frontmatter = false,
-
-  -- Optional, alternatively you can customize the frontmatter data.
-  note_frontmatter_func = function(note)
-    -- This is equivalent to the default frontmatter function.
-    local out = { id = note.id, aliases = note.aliases, tags = note.tags }
-    -- `note.metadata` contains any manually added fields in the frontmatter.
-    -- So here we just make sure those fields are kept in the frontmatter.
-    if note.metadata ~= nil and require("obsidian").util.table_length(note.metadata) > 0 then
-      for k, v in pairs(note.metadata) do
-        out[k] = v
-      end
-    end
-    return out
-  end,
-
-  -- Optional, for templates (see below).
-  templates = {
-    subdir = "templates",
-    date_format = "%Y-%m-%d",
-    time_format = "%H:%M",
-    -- A map for custom variables, the key should be the variable and the value a function
-    substitutions = {}
-  },
-
-  -- Optional, customize the backlinks interface.
-  backlinks = {
-    -- The default height of the backlinks pane.
-    height = 10,
-    -- Whether or not to wrap lines.
-    wrap = true,
-  },
-
-  -- Optional, by default when you use `:ObsidianFollowLink` on a link to an external
-  -- URL it will be ignored but you can customize this behavior here.
-  follow_url_func = function(url)
-    -- Open the URL in the default web browser.
-    vim.fn.jobstart({ "open", url }) -- Mac OS
-    -- vim.fn.jobstart({"xdg-open", url})  -- linux
-  end,
-
-  -- Optional, set to true if you use the Obsidian Advanced URI plugin.
-  -- https://github.com/Vinzent03/obsidian-advanced-uri
-  use_advanced_uri = false,
-
-  -- Optional, set to true to force ':ObsidianOpen' to bring the app to the foreground.
-  open_app_foreground = false,
-
-  -- Optional, by default commands like `:ObsidianSearch` will attempt to use
-  -- telescope.nvim, fzf-lua, and fzf.vim (in that order), and use the
-  -- first one they find. By setting this option to your preferred
-  -- finder you can attempt it first. Note that if the specified finder
-  -- is not installed, or if it the command does not support it, the
-  -- remaining finders will be attempted in the original order.
-  finder = "telescope.nvim",
-
-  -- Optional, sort search results by "path", "modified", "accessed", or "created".
-  -- The recommend value is "modified" and `true` for `sort_reversed`, which means, for example `:ObsidianQuickSwitch`
-  -- will show the notes sorted by latest modified time
-  sort_by = "modified",
-  sort_reversed = true,
-
-  -- Optional, determines whether to open notes in a horizontal split, a vertical split,
-  -- or replacing the current buffer (default)
-  -- Accepted values are "current", "hsplit" and "vsplit"
-  open_notes_in = "vsplit",
-
-  -- Optional, set the YAML parser to use. The valid options are:
-  --  * "native" - uses a pure Lua parser that's fast but potentially misses some edge cases.
-  --  * "yq" - uses the command-line tool yq (https://github.com/mikefarah/yq), which is more robust
-  --    but much slower and needs to be installed separately.
-  -- In general you should be using the native parser unless you run into a bug with it, in which
-  -- case you can temporarily switch to the "yq" parser.
-  yaml_parser = "native",
-})
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
+pcall(require('telescope').load_extension, 'live_grep_args')
 
 -- Telescope live_grep in git root
 -- Function to find the git root directory based on the current buffer's path
@@ -669,6 +683,7 @@ vim.keymap.set('n', '<leader>/', function()
 end, { desc = '[/] Fuzzily search in current buffer' })
 
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
+vim.keymap.set('n', '<leader>gb', require('telescope.builtin').git_branches, { desc = 'Search [G]it [B]ranches' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
@@ -676,6 +691,18 @@ vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc
 vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>sc', require('telescope.builtin').commands, { desc = '[S]earch [C]ommands' })
+
+vim.keymap.set('n', '<leader>tn', ":lua require('neotest').run.run()<CR>", { desc = '[T]est [N]earest' })
+vim.keymap.set('n', '<leader>tf', ":lua require('neotest').run.run(vim.fn.expand('%'))<CR>", { desc = '[T]est [F]ile' })
+vim.keymap.set('n', '<leader>ts', ":lua require('neotest').summary.toggle()<CR>", { desc = '[T]est [S]ummary' })
+
+local neogit = require('neogit')
+
+vim.keymap.set('n', '<leader>gs', neogit.open)
+vim.keymap.set('n', '<leader>gc', ":Neogit commit<CR ")
+vim.keymap.set('n', '<leader>gc', ":Neogit pull<CR ")
+vim.keymap.set('n', '<leader>gP', ":Neogit push<CR ")
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -781,42 +808,6 @@ local on_attach = function(_, bufnr)
   nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
   nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
 
-  nmap('<leader>bn', ':ObsidianNew ', 'O[b]sidian [n]ew note')
-  nmap('<leader>bo', ':ObsidianOpen ', 'O[b]sidian [o]pen')
-  nmap('<leader>bt', ':ObsidianToday <CR>', 'O[b]sidian [t]oday')
-  nmap('<leader>bs', ':ObsidianSearch ', 'O[b]sidian [S]earch')
-  nmap('<leader>bw', ':ObsidianWorkspace ', 'O[b]sidian [w]orkspace')
-
-
-  -- chatgpt mappings
-  nmap('<leader>pc', ':ChatGPT<CR>', 'ChatG[P]T [c]ommand')
-  nmap('<leader>pe', ':ChatGPTEditWithInstruction<CR>', 'ChatG[P]T [e]dit with instruction')
-  nmap('<leader>pg', ':ChatGPTRun grammar_correction<CR>', 'ChatG[P]T [g]rammar Correction')
-  nmap('<leader>pt', ':ChatGPTRun translate<CR>', 'ChatG[P]T [t]ranslate')
-  nmap('<leader>pk', ':ChatGPTRun keywords<CR>', 'ChatG[P]T [k]eywords')
-  nmap('<leader>pd', ':ChatGPTRun docstring<CR>', 'ChatG[P]T [d]ocstring')
-  nmap('<leader>pa', ':ChatGPTRun add_tests<CR>', 'ChatG[P]T [a]dd Tests')
-  nmap('<leader>po', ':ChatGPTRun optimize_code<CR>', 'ChatG[P]T [o]ptimize Code')
-  nmap('<leader>ps', ':ChatGPTRun summarize<CR>', 'ChatG[P]T [s]ummarize')
-  nmap('<leader>pf', ':ChatGPTRun fix_bugs<CR>', 'ChatG[P]T [f]ix Bugs')
-  nmap('<leader>px', ':ChatGPTRun explain_code<CR>', 'ChatG[P]T e[x]plain Code')
-  nmap('<leader>pr', ':ChatGPTRun roxygen_edit<CR>', 'ChatG[P]T [r]oxygen Edit')
-  nmap('<leader>pl', ':ChatGPTRun code_readability_analysis<CR>', 'ChatG[P]T Code Readabi[l]ity Analysis')
-
-  vmap('<leader>pc', ':ChatGPT<CR>', 'ChatG[P]T [c]ommand')
-  vmap('<leader>pe', ':ChatGPTEditWithInstruction<CR>', 'ChatG[P]T [e]dit with instruction')
-  vmap('<leader>pg', ':ChatGPTRun grammar_correction<CR>', 'ChatG[P]T [g]rammar Correction')
-  vmap('<leader>pt', ':ChatGPTRun translate<CR>', 'ChatG[P]T [t]ranslate')
-  vmap('<leader>pk', ':ChatGPTRun keywords<CR>', 'ChatG[P]T [k]eywords')
-  vmap('<leader>pd', ':ChatGPTRun docstring<CR>', 'ChatG[P]T [d]ocstring')
-  vmap('<leader>pa', ':ChatGPTRun add_tests<CR>', 'ChatG[P]T [a]dd Tests')
-  vmap('<leader>po', ':ChatGPTRun optimize_code<CR>', 'ChatG[P]T [o]ptimize Code')
-  vmap('<leader>ps', ':ChatGPTRun summarize<CR>', 'ChatG[P]T [s]ummarize')
-  vmap('<leader>pf', ':ChatGPTRun fix_bugs<CR>', 'ChatG[P]T [f]ix Bugs')
-  vmap('<leader>px', ':ChatGPTRun explain_code<CR>', 'ChatG[P]T e[x]plain Code')
-  vmap('<leader>pr', ':ChatGPTRun roxygen_edit<CR>', 'ChatG[P]T [r]oxygen Edit')
-  vmap('<leader>pl', ':ChatGPTRun code_readability_analysis<CR>', 'ChatG[P]T Code Readabi[l]ity Analysis')
-
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
   nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
@@ -838,14 +829,13 @@ end
 -- document existing key chains
 require('which-key').register {
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>b'] = { name = 'O[b]sidian', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>p'] = { name = 'ChatG[P]T', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'More git', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  ['<leader>t'] = { name = '[T]est', _ = 'which_key_ignore' },
 }
 
 -- mason-lspconfig requires that these setup functions are called in this order
@@ -869,7 +859,7 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  tsserver = {},
+  -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
@@ -959,28 +949,27 @@ cmp.setup {
 
 -- Define the function to switch ternary branches
 function SwitchTernary()
-    -- Get the current line
-    local line = vim.api.nvim_get_current_line()
-    
-    -- Use Lua patterns to capture the parts of the ternary expression
-    local pre, first, second = line:match("(.-)%?(.-):(.+)")
-    
-    -- Check if the ternary pattern was found
-    if pre == nil or first == nil or second == nil then
-        return
-    end
+  -- Get the current line
+  local line = vim.api.nvim_get_current_line()
 
-    -- Trim whitespace for a clean switch
-    first = first:gsub("^%s*(.-)%s*$", "%1")
-    second = second:gsub("^%s*(.-)%s*$", "%1")
+  -- Use Lua patterns to capture the parts of the ternary expression
+  local pre, first, second = line:match("(.-)%?(.-):(.+)")
 
-    -- Switch the branches of the ternary
-    local switched = pre .. "?" .. second .. " : " .. first
-    
-    -- Set the modified line back
-    vim.api.nvim_set_current_line(switched)
+  -- Check if the ternary pattern was found
+  if pre == nil or first == nil or second == nil then
+    return
+  end
+
+  -- Trim whitespace for a clean switch
+  first = first:gsub("^%s*(.-)%s*$", "%1")
+  second = second:gsub("^%s*(.-)%s*$", "%1")
+
+  -- Switch the branches of the ternary
+  local switched = pre .. "?" .. second .. " : " .. first
+
+  -- Set the modified line back
+  vim.api.nvim_set_current_line(switched)
 end
 
 -- Map the function to a key combination, for example, <leader>ts
-vim.api.nvim_set_keymap('n', '<leader>ts', ':lua SwitchTernary()<CR>', { noremap = true, silent = true })
-
+vim.api.nvim_set_keymap('n', '<leader>st', ':lua SwitchTernary()<CR>', { noremap = true, silent = true })
